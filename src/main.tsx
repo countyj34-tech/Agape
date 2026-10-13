@@ -16,6 +16,14 @@ import { removeDemoStoreAndDataLocalOnly } from '@/lib/demoStoreInitializer';
 if (import.meta.env.PROD) {
 	registerSW({
 		immediate: true,
+		onNeedRefresh() {
+			if (window.confirm('A new version is available. Reload to update the POS system?')) {
+				window.location.reload();
+			}
+		},
+		onOfflineReady() {
+			console.info('Mthunzi POS is ready for offline use.');
+		},
 	});
 } else {
 	console.info('Service worker registration skipped in development mode');

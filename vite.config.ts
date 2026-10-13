@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ['robots.txt', 'manifest.json', 'favicon.ico', 'favicon.png'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webp}'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         navigateFallback: '/index.html',
         // Keep POS shell available when Netlify/hosting is unreachable
         navigateFallbackDenylist: [/^\/api\//],
