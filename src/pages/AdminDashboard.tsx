@@ -139,6 +139,7 @@ export default function AdminDashboard() {
     state: printerState,
     discoverAndConnect: discoverPrinter,
     discoverAndConnectSerial: discoverSerialPrinter,
+    discoverAndConnectUsb: discoverUsbPrinter,
     discoverAndConnectBle: discoverBlePrinter,
     autoReconnect: reconnectPrinter,
     disconnect: disconnectPrinter,
@@ -1183,6 +1184,21 @@ export default function AdminDashboard() {
                   }}
                 >
                   Connect Cable / USB
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const ok = await discoverUsbPrinter();
+                      if (ok) toast.success('USB printer connected');
+                    } catch (e) {
+                      console.error(e);
+                      toast.error((e as Error)?.message || 'Failed to connect USB printer');
+                    }
+                  }}
+                >
+                  Connect USB Direct
                 </Button>
 
                 <Button

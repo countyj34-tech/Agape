@@ -23,6 +23,15 @@ const DEFAULT_SERIAL_BAUD = 9600;
 const DEFAULT_NETWORK_PORT = 9100;
 const USB_PRINTER_VENDOR_IDS = [0x04b8];
 
+function safeLocalStorageGet(key: string): string {
+  if (typeof window === 'undefined' || !('localStorage' in window)) return '';
+  try {
+    return window.localStorage.getItem(key) || '';
+  } catch {
+    return '';
+  }
+}
+
 function getUsbPrinterFilters(): Array<{ vendorId?: number; classCode?: number }> {
   return USB_PRINTER_VENDOR_IDS.map((vendorId) => ({ vendorId }));
 }
@@ -98,9 +107,9 @@ function isWebUsbSupported(): boolean {
 }
 
 function hasConfiguredNetworkPrinter(): boolean {
-  if (typeof localStorage === 'undefined') return false;
-  const host = normalizeNetworkHost(localStorage.getItem(LS_NETWORK_HOST) || '');
-  const port = Number(localStorage.getItem(LS_NETWORK_PORT));
+  if (typeof window === 'undefined' || !('localStorage' in window)) return false;
+  const host = normalizeNetworkHost(safeLocalStorageGet(LS_NETWORK_HOST));
+  const port = Number(safeLocalStorageGet(LS_NETWORK_PORT));
   return !!host && Number.isInteger(port) && port >= 1 && port <= 65535;
 }
 
@@ -144,8 +153,8 @@ export class BluetoothPrinterService {
   private networkPort: number | null = null;
 
   constructor() {
-    const savedHost = localStorage.getItem(LS_NETWORK_HOST);
-    const savedPort = Number(localStorage.getItem(LS_NETWORK_PORT));
+    const savedHost = safeLocalStorageGet(LS_NETWORK_HOST);
+    const savedPort = Number(safeLocalStorageGet(LS_NETWORK_PORT));
     if (savedHost) this.networkHost = normalizeNetworkHost(savedHost);
     if (Number.isFinite(savedPort) && savedPort > 0) this.networkPort = savedPort;
   }

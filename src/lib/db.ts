@@ -65,7 +65,10 @@ export type SaleDraftItem = {
   unitPrice: number; // price charged to customer
 };
 
-const DB_NAME = 'mthunzi-pos-db';
+const DB_NAME =
+  typeof process !== 'undefined' && process.env?.VITEST
+    ? `mthunzi-pos-db-${process.env.VITEST_POOL_ID || '0'}`
+    : 'mthunzi-pos-db';
 
 function asDate(value: unknown): Date {
   if (value instanceof Date) return value;

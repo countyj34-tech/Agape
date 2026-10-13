@@ -11,6 +11,7 @@ export function useBluetoothPrinter() {
     state,
     discoverAndConnect: () => bluetoothPrinterService.discoverAndConnect(),
     discoverAndConnectSerial: () => bluetoothPrinterService.discoverAndConnectSerial(),
+    discoverAndConnectUsb: () => bluetoothPrinterService.discoverAndConnectUsb(),
     discoverAndConnectBle: () => bluetoothPrinterService.discoverAndConnectBle(),
     autoReconnect: () => bluetoothPrinterService.autoReconnect(),
     ensureConnected: () => bluetoothPrinterService.ensureConnected(),

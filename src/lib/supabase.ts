@@ -1,14 +1,44 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+function getStoredRuntimeValue(key: string): string {
+  try {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem(key) || '';
+  } catch {
+    return '';
+  }
+}
+
+function saveStoredRuntimeValue(key: string, value: string): void {
+  if (!value) return;
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // ignore storage failures
+  }
+}
+
 // Supabase configuration
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const runtimeSupabaseUrl = getStoredRuntimeValue('mthunzi_supabase_url');
+const runtimeSupabaseAnonKey = getStoredRuntimeValue('mthunzi_supabase_anon_key');
+const viteEnv = (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined') ? import.meta.env : {};
+const supabaseUrl = viteEnv.VITE_SUPABASE_URL || runtimeSupabaseUrl || '';
+const supabaseAnonKey = viteEnv.VITE_SUPABASE_ANON_KEY || runtimeSupabaseAnonKey || '';
+
+if (viteEnv.VITE_SUPABASE_URL) saveStoredRuntimeValue('mthunzi_supabase_url', viteEnv.VITE_SUPABASE_URL);
+if (viteEnv.VITE_SUPABASE_ANON_KEY) saveStoredRuntimeValue('mthunzi_supabase_anon_key', viteEnv.VITE_SUPABASE_ANON_KEY);
+
+const safeSupabaseUrl = supabaseUrl || 'https://placeholder.supabase.local';
+const safeSupabaseAnonKey = supabaseAnonKey || 'placeholder-anon-key';
 
 function isValidSupabaseUrl(url: string): boolean {
   return typeof url === 'string' && (url.startsWith('https://') || url.startsWith('http://'));
 }
 
-// Only create a real Supabase client when configuration is present and looks valid
+// Only create a real Supabase client when configuration is present and looks valid.
+// If it is absent, keep the app in local/offline mode instead of hard-breaking startup.
 const hasValidConfig = Boolean(
   supabaseUrl &&
   supabaseAnonKey &&
@@ -29,7 +59,7 @@ try {
   // ignore
 }
 
-export const supabase: SupabaseClient<any, any, any> = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase: SupabaseClient<any, any, any> = createClient(safeSupabaseUrl, safeSupabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -44,14 +74,14 @@ export const supabase: SupabaseClient<any, any, any> = createClient(supabaseUrl,
 
 // Service role client for admin operations (bypasses rate limits)
 // IMPORTANT: never create an admin client in the browser — prefer server-side only.
-const viteEnv = (typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined') ? import.meta.env : {};
 const viteServiceKey = viteEnv.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
 const nodeServiceKey = typeof process !== 'undefined' && process.env ? (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '') : '';
 const supabaseServiceKey = nodeServiceKey || viteServiceKey || '';
+const safeSupabaseServiceKey = supabaseServiceKey || 'placeholder-service-role-key';
 
 // Only instantiate the admin client when running server-side (no `window`).
 export const supabaseAdmin = (typeof window === 'undefined' && supabaseServiceKey)
-  ? createClient(supabaseUrl, supabaseServiceKey, {
+  ? createClient(safeSupabaseUrl, safeSupabaseServiceKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
@@ -66,7 +96,7 @@ export function getDeviceStoreId(): string {
   if (stored) return stored;
   
   // Fall back to env variable
-  const envStoreId = import.meta.env.VITE_STORE_ID || '00000000-0000-0000-0000-000000000001';
+  const envStoreId = viteEnv.VITE_STORE_ID || '00000000-0000-0000-0000-000000000001';
   localStorage.setItem('mthunzi_store_id', envStoreId);
   return envStoreId;
 }
@@ -97,7 +127,16 @@ export async function hasActiveSession(): Promise<boolean> {
   }
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      const timer = setTimeout(() => reject(new Error('Supabase session check timed out')), 1500);
+      sessionPromise.finally(() => clearTimeout(timer));
+    });
+
+    const { data: { session } } = await Promise.race([
+      sessionPromise,
+      timeoutPromise,
+    ]);
     return !!session;
   } catch (error) {
     return false;
