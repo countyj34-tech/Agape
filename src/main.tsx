@@ -17,7 +17,8 @@ if (import.meta.env.PROD) {
 	registerSW({
 		immediate: true,
 		onNeedRefresh() {
-			if (window.confirm('A new version is available. Reload to update the POS system?')) {
+			const shouldUpdate = window.confirm('A new version is available. Reload to update the POS system?');
+			if (shouldUpdate) {
 				window.location.reload();
 			}
 		},
@@ -25,6 +26,14 @@ if (import.meta.env.PROD) {
 			console.info('Mthunzi POS is ready for offline use.');
 		},
 	});
+
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.getRegistrations().then((registrations) => {
+			for (const registration of registrations) {
+				registration.unregister().catch(() => undefined);
+			}
+		}).catch(() => undefined);
+	}
 } else {
 	console.info('Service worker registration skipped in development mode');
 	// Clear any leftover production SW that can freeze navigation in local testing.
