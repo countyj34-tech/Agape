@@ -1,0 +1,25 @@
+{
+  "staff": {
+    "id": "f3087284-be43-49b0-a9d0-0a7c9e69e9be",
+    "company_id": "1c14ee85-6ea7-4af2-86f0-0ee1ccc8565b",
+    "store_id": "80463816-5428-4e1d-8b41-833670f44086",
+    "department_id": null,
+    "name": "Autotest Staff 1778087860409",
+    "phone": "26097405405",
+    "email": "autotest-staff+1778087860409@example.com",
+    "role": "salesperson",
+    "employee_pin": null,
+    "employee_id": null,
+    "is_pin_verified": false,
+    "is_manager": false,
+    "is_active": true,
+    "auth_user_id": "2e47af93-324f-451c-9d7d-2856b3dfe26b",
+    "pin_hash": "654321#MthunziPOS2026",
+    "created_at": "2026-05-06T17:17:40.409+00:00",
+    "updated_at": "2026-05-06T17:17:40.409+00:00"
+  },
+  "credentials": {
+    "email": "autotest-staff+1778087860409@example.com",
+    "pin": "654321"
+  }
+}

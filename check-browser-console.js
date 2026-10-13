@@ -1,0 +1,97 @@
+// Check browser console for actual error
+console.log('🔍 CHECKING BROWSER CONSOLE FOR ACTUAL ERROR');
+console.log('');
+
+console.log('Since admin API is working in tests but you still get rate limit,');
+console.log('let me check what is actually happening in the browser.');
+console.log('');
+
+console.log('📋 STEPS TO DEBUG:');
+console.log('');
+console.log('1. Open browser developer tools (F12)');
+console.log('2. Go to Console tab');
+console.log('3. Clear the console');
+console.log('4. Try to submit the signup form');
+console.log('5. Look for these specific errors:');
+console.log('');
+console.log('🔍 ERROR PATTERNS TO LOOK FOR:');
+console.log('');
+console.log('❌ RATE LIMIT ERRORS:');
+console.log('   - "email rate limit exceeded"');
+console.log('   - "Too many requests"');
+console.log('   - "Rate limit"');
+console.log('');
+console.log('❌ TYPE ERRORS:');
+console.log('   - "createMember is not a function"');
+console.log('   - "Cannot read property of undefined"');
+console.log('   - "Type error"');
+console.log('   - "Missing required field"');
+console.log('');
+console.log('❌ NETWORK ERRORS:');
+console.log('   - "Network error"');
+console.log('   - "Failed to fetch"');
+console.log('   - "CORS error"');
+console.log('');
+console.log('❌ CONTEXT ERRORS:');
+console.log('   - "useSupabaseAuth is not a function"');
+console.log('   - "Context not found"');
+console.log('   - "Provider not found"');
+console.log('');
+console.log('🔧 QUICK TEST IN CONSOLE:');
+console.log('');
+console.log('Run this in browser console:');
+console.log('');
+console.log('// Check if context is working');
+console.log('const { createMember } = useSupabaseAuth();');
+console.log('console.log("createMember available:", typeof createMember);');
+console.log('console.log("createMember function:", createMember);');
+console.log('');
+console.log('// Test if it works');
+console.log('createMember({');
+console.log('  email: "test@console.com",');
+console.log('  password: "123456",');
+console.log('  fullName: "Console Test",');
+console.log('  phone: "+260123456789",');
+console.log('  role: "admin",');
+console.log('  companyId: "test-company",');
+console.log('  storeId: "test-store"');
+console.log('}).then(result => console.log("Result:", result))');
+console.log('  .catch(error => console.error("Error:", error));');
+console.log('');
+
+console.log('🎯 EXPECTED RESULTS:');
+console.log('');
+console.log('✅ createMember should be "function"');
+console.log('✅ Test call should succeed');
+console.log('✅ No rate limit errors');
+console.log('✅ User created successfully');
+console.log('');
+
+console.log('❌ IF STILL GETTING RATE LIMIT:');
+console.log('');
+console.log('1. Check if createMember is actually "function"');
+console.log('2. Check if test call in console works');
+console.log('3. Check if form is calling wrong function');
+console.log('4. Check for multiple signup forms');
+console.log('5. Check if dev server needs restart');
+console.log('');
+
+console.log('📊 MOST LIKELY ISSUES:');
+console.log('');
+console.log('1. TypeScript compilation errors');
+console.log('2. Context not properly updated');
+console.log('3. Wrong function still being called');
+console.log('4. Browser caching old version');
+console.log('5. Dev server not restarted');
+console.log('');
+
+console.log('🔄 NEXT STEPS:');
+console.log('');
+console.log('1. Check browser console for actual errors');
+console.log('2. Run the console test above');
+console.log('3. Identify exact failure point');
+console.log('4. Fix the actual issue');
+console.log('5. Verify fix works');
+console.log('');
+
+console.log('🎉 The issue is in frontend - need to check browser console!');

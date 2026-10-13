@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Supabase Auth</title>
+</head>
+<body>
+    <h1>Supabase Authentication Test</h1>
+    <div id="status">Loading...</div>
+    <div id="error"></div>
+    
+    <script type="module">
+        // Test Supabase configuration
+        const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://sotrgvahjouvelnsrsly.supabase.co';
+        const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdHJndmFoam91dmVsbnNyc2x5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4Mzk2NTAsImV4cCI6MjA5MjQxNTY1MH0.vXmd18EnHTMcDcjG-QY11-CmR-MOclzClSnozAopF0k';
+        
+        console.log('Testing Supabase config:');
+        console.log('URL:', supabaseUrl);
+        console.log('Key present:', supabaseAnonKey ? 'Yes' : 'No');
+        
+        // Load Supabase client
+        import('https://esm.sh/@supabase/supabase-js@2').then(({ createClient }) => {
+            const supabase = createClient(supabaseUrl, supabaseAnonKey);
+            
+            document.getElementById('status').textContent = 'Supabase client created successfully';
+            
+            // Test connection
+            supabase.from('profiles').select('count').then(result => {
+                console.log('Connection test result:', result);
+                if (result.error) {
+                    document.getElementById('error').textContent = 'Connection error: ' + result.error.message;
+                } else {
+                    document.getElementById('status').textContent = 'Supabase connection successful!';
+                }
+            });
+            
+        }).catch(err => {
+            document.getElementById('error').textContent = 'Failed to load Supabase: ' + err.message;
+        });
+    </script>
+</body>
+</html>

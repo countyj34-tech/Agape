@@ -1,0 +1,7 @@
+opencv-python
+numpy
+google-generativeai
+python-dotenv
+easyocr
+Pillow
+opencv-python-headless

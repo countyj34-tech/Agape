@@ -1,0 +1,87 @@
+{
+  "userRes": {
+    "data": {
+      "user": {
+        "id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+        "aud": "authenticated",
+        "role": "authenticated",
+        "email": "fn-admin-no-cleanup-004863-9427@example.com",
+        "email_confirmed_at": "2026-05-07T20:33:29.598639Z",
+        "phone": "",
+        "confirmed_at": "2026-05-07T20:33:29.598639Z",
+        "app_metadata": {
+          "provider": "email",
+          "providers": [
+            "email"
+          ]
+        },
+        "user_metadata": {
+          "createdBy": "admin-signup",
+          "email_verified": true,
+          "staffName": "Fn Owner",
+          "staffPhone": "26093813313"
+        },
+        "identities": [
+          {
+            "identity_id": "635ec54b-e2e3-4190-867d-f2730e9d43c3",
+            "id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+            "user_id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+            "identity_data": {
+              "email": "fn-admin-no-cleanup-004863-9427@example.com",
+              "email_verified": false,
+              "phone_verified": false,
+              "sub": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1"
+            },
+            "provider": "email",
+            "last_sign_in_at": "2026-05-07T20:33:29.592668Z",
+            "created_at": "2026-05-07T20:33:29.593383Z",
+            "updated_at": "2026-05-07T20:33:29.593383Z",
+            "email": "fn-admin-no-cleanup-004863-9427@example.com"
+          }
+        ],
+        "created_at": "2026-05-07T20:33:29.561233Z",
+        "updated_at": "2026-05-07T20:33:29.599492Z",
+        "is_anonymous": false
+      }
+    },
+    "error": null
+  },
+  "profiles": {
+    "success": true,
+    "error": null,
+    "data": {
+      "id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+      "full_name": "Fn Owner",
+      "email": "fn-admin-no-cleanup-004863-9427@example.com",
+      "phone": "26093813313",
+      "role": "owner",
+      "company_id": "b74a8f9d-42c5-4030-93b9-e2f19efcffcf",
+      "store_id": "e5183b3f-edfa-4075-a519-8224eb72ea83",
+      "is_active": true,
+      "created_at": "2026-05-07T20:33:29.789984+00:00",
+      "updated_at": "2026-05-07T20:33:29.789984+00:00"
+    },
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  },
+  "memberships": {
+    "success": true,
+    "error": null,
+    "data": [
+      {
+        "id": "05ceef5c-df27-4d56-9ed4-74b4c22754ad",
+        "user_id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+        "company_id": "b74a8f9d-42c5-4030-93b9-e2f19efcffcf",
+        "role": "owner",
+        "store_id": "e5183b3f-edfa-4075-a519-8224eb72ea83",
+        "is_active": true,
+        "joined_at": "2026-05-07T20:33:29.8258+00:00",
+        "profile_id": null
+      }
+    ],
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "invokedAt": "2026-05-07T20:33:28.030Z",
+  "url": "https://sotrgvahjouvelnsrsly.supabase.co/functions/v1/admin-signup",
+  "status": 201,
+  "statusText": "Created",
+  "headers": {
+    "alt-svc": "h3=\":443\"; ma=86400",
+    "cf-cache-status": "DYNAMIC",
+    "cf-ray": "9f82fffc398567d4-JNB",
+    "connection": "keep-alive",
+    "content-encoding": "gzip",
+    "content-length": "236",
+    "content-type": "application/json",
+    "date": "Thu, 07 May 2026 20:33:29 GMT",
+    "endpoint-load-metrics": "application_utilization:7,named_metrics.queue_depth:7",
+    "sb-gateway-version": "1",
+    "sb-project-ref": "sotrgvahjouvelnsrsly",
+    "sb-request-id": "019e0425-39a9-7f87-a5ae-a30b3e104d03",
+    "server": "cloudflare",
+    "set-cookie": "__cf_bm=0pFipKbURB4nuba6gH7eUH.EwzEfYK7EgO9eHq6AsAw-1778186008.9974818-1.0.1.1-KvuQ7d1rsh.pALgzZz7SbPSRNVPvgO1FIqtyD.6vFV3p4EgK6D8FQ6GNBnOxaPAcStzSOm.N.7QyCZ4PTOr6R0cmR76XSBXqJr5ukUbln2eMxfmuCfabXZ0J8AugXU.G; HttpOnly; Secure; Path=/; Domain=supabase.co; Expires=Thu, 07 May 2026 21:03:29 GMT",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "vary": "Accept-Encoding",
+    "x-deno-execution-id": "dbcf89c3-dea9-4f69-a8af-e9d548a21dd7",
+    "x-sb-edge-region": "eu-central-2",
+    "x-served-by": "supabase-edge-runtime"
+  },
+  "payload": {
+    "email": "fn-admin-no-cleanup-004863-9427@example.com",
+    "password": "P@ssw0rd1",
+    "companyName": "Fn Company NC 004863",
+    "companyEmail": "fn-company-nc-004863@example.com",
+    "companyPhone": "26093969471",
+    "storeName": "Fn Store NC 004863",
+    "storeLocation": "Fn Location",
+    "staffName": "Fn Owner",
+    "staffPhone": "26093813313",
+    "pin": "123456",
+    "role": "owner"
+  },
+  "body": {
+    "success": true,
+    "uid": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+    "user_id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+    "company_id": "b74a8f9d-42c5-4030-93b9-e2f19efcffcf",
+    "store_id": "e5183b3f-edfa-4075-a519-8224eb72ea83",
+    "company": {
+      "id": "b74a8f9d-42c5-4030-93b9-e2f19efcffcf",
+      "name": "Fn Company NC 004863"
+    },
+    "store": {
+      "id": "e5183b3f-edfa-4075-a519-8224eb72ea83",
+      "name": "Fn Store NC 004863"
+    }
+  }
+}

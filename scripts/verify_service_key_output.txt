@@ -1,0 +1,5 @@
+SUPABASE_URL: https://sotrgvahjouvelnsrsly.supabase.co
+SERVICE_ROLE_KEY: eyJhbG...xl5uzc
+ANON_KEY present: true
+Admin query status: OK
+Admin count header: 42

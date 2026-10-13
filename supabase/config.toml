@@ -1,0 +1,7 @@
+project_id = "sotrgvahjouvelnsrsly"
+
+[functions.admin-signup]
+verify_jwt = false
+
+[functions.vantage-ocr]
+verify_jwt = false

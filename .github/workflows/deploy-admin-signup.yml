@@ -1,0 +1,34 @@
+name: Deploy admin-signup
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - deploy-admin-signup
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install supabase CLI
+        run: npm install -g supabase@latest
+
+      - name: Deploy admin-signup function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          supabase --version
+          supabase functions deploy admin-signup --project-ref $SUPABASE_PROJECT_REF

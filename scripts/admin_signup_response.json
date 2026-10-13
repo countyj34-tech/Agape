@@ -1,0 +1,33 @@
+{
+  "result": {
+    "data": {
+      "success": true,
+      "uid": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+      "user_id": "c37648ac-e8e9-4bf5-aa61-bf14d36ce8e1",
+      "company_id": "b74a8f9d-42c5-4030-93b9-e2f19efcffcf",
+      "store_id": "e5183b3f-edfa-4075-a519-8224eb72ea83",
+      "company": {
+        "id": "b74a8f9d-42c5-4030-93b9-e2f19efcffcf",
+        "name": "Fn Company NC 004863"
+      },
+      "store": {
+        "id": "e5183b3f-edfa-4075-a519-8224eb72ea83",
+        "name": "Fn Store NC 004863"
+      }
+    },
+    "error": null
+  },
+  "payload": {
+    "email": "fn-admin-no-cleanup-004863-9427@example.com",
+    "password": "P@ssw0rd1",
+    "companyName": "Fn Company NC 004863",
+    "companyEmail": "fn-company-nc-004863@example.com",
+    "companyPhone": "26093969471",
+    "storeName": "Fn Store NC 004863",
+    "storeLocation": "Fn Location",
+    "staffName": "Fn Owner",
+    "staffPhone": "26093813313",
+    "pin": "123456",
+    "role": "owner"
+  }
+}

@@ -1,0 +1,4 @@
+Requesting: https://sotrgvahjouvelnsrsly.supabase.co/rest/v1/companies?select=id&limit=1
+HTTP status: 401 Unauthorized
+Body:
+{"message":"Invalid API key","hint":"Double check your Supabase `anon` or `service_role` API key."}

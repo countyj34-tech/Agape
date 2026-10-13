@@ -1,0 +1,57 @@
+SERVICE ROLE KEY SETUP GUIDE
+
+✅ STEP 1: GET YOUR SERVICE ROLE KEY
+
+1. Go to your Supabase Dashboard:
+   https://sotrgvahjouvelnsrsly.supabase.co
+
+2. Navigate to Project Settings:
+   Click the gear icon ⚙️ → Settings
+
+3. Go to API section:
+   Click "API" in the left menu
+
+4. Find the service_role key:
+   Scroll down to "Project API keys"
+   Look for "service_role" (NOT "anon" key)
+   Click the "copy" button
+
+5. Replace the placeholder in .env:
+   Open: d:\mthunzi-pos-suite-main\.env
+   Replace: PASTE_YOUR_SERVICE_ROLE_KEY_HERE
+   With: your actual service_role key
+
+✅ STEP 2: TEST THE SETUP
+
+After adding the key, the admin functions will work:
+
+import { createCompanyMember } from "./lib/supabaseAuth";
+
+// This will bypass rate limits
+const result = await createCompanyMember({
+  email: "test@example.com",
+  password: "123456",
+  fullName: "Test User",
+  phone: "+260123456789",
+  role: "staff",
+  companyId: "your-company-id",
+  storeId: "your-store-id"
+});
+
+⚠️  SECURITY WARNING:
+- Service role key has admin privileges
+- Never commit it to git
+- Only use in backend/admin functions
+- Keep it secure and private
+
+🎯 RESULT:
+✅ No more email rate limits
+✅ Immediate user creation
+✅ Perfect for multi-tenant systems
+
+📝 CURRENT STATUS:
+- Service role key placeholder: ADDED to .env
+- Admin functions: READY to use
+- Rate limits: WILL BE BYPASSED once key is added
+
+🔄 NEXT: Add your actual service role key to .env file

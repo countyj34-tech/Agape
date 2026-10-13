@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Mthunzi">
+  <defs>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d7fbff"/>
+      <stop offset="50%" stop-color="#7ee7ff"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="#05070d"/>
+  <rect x="18" y="18" width="476" height="476" rx="118" fill="none" stroke="url(#stroke)" stroke-width="10" opacity="0.9"/>
+  <path
+    filter="url(#glow)"
+    fill="none"
+    stroke="url(#stroke)"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M118 338c18-92 42-186 78-186 22 0 32 28 42 78 12 58 24 118 40 118s28-62 42-118c12-48 24-78 46-78 34 0 58 78 78 186"
+  />
+</svg>
