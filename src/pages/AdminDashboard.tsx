@@ -141,6 +141,7 @@ export default function AdminDashboard() {
     discoverAndConnectSerial: discoverSerialPrinter,
     discoverAndConnectUsb: discoverUsbPrinter,
     discoverAndConnectBle: discoverBlePrinter,
+    connectNativePrinter,
     autoReconnect: reconnectPrinter,
     disconnect: disconnectPrinter,
     testPrint,
@@ -1218,6 +1219,25 @@ export default function AdminDashboard() {
                   }}
                 >
                   Connect Wi‑Fi / LAN
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const portInput = window.prompt('Printer port path (COM3, /dev/ttyUSB0, etc.)', window.localStorage.getItem('bluetoothPrinter:nativePort') || 'COM3');
+                      if (!portInput) return;
+                      const baudInput = window.prompt('Baud rate', window.localStorage.getItem('bluetoothPrinter:nativeBaud') || '9600');
+                      const baud = Number(baudInput || '9600');
+                      const ok = await connectNativePrinter(portInput, Number.isFinite(baud) ? baud : 9600);
+                      if (ok) toast.success('Local desktop printer connected');
+                    } catch (e) {
+                      console.error(e);
+                      toast.error((e as Error)?.message || 'Failed to connect local desktop printer');
+                    }
+                  }}
+                >
+                  Connect Local Desktop
                 </Button>
 
                 <Button
