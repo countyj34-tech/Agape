@@ -7,6 +7,7 @@ import fs from 'fs/promises';
 import { readFileSync } from 'fs';
 import { spawn } from 'child_process';
 import { randomUUID } from 'crypto';
+import { SerialPort } from 'serialport';
 import { handleZraRoute } from './routes/zraRoutes.js';
 import { handlePesapalRoute } from './routes/pesapalRoutes.js';
 import { handleWhatsAppRoute } from './routes/whatsappRoutes.js';
@@ -204,9 +205,14 @@ const uploadDir = path.join(os.tmpdir(), 'bar_automation_pipeline', 'uploads');
 await fs.mkdir(uploadDir, { recursive: true });
 
 const networkPrinterSockets = new Map();
+const nativePrinterPorts = new Map();
 
 function getPrinterSocketKey(host, port) {
   return `${String(host || '').trim()}:${Number(port || 0)}`;
+}
+
+function getPrinterPortKey(portPath, baudRate) {
+  return `${String(portPath || '').trim()}:${Number(baudRate || 9600)}`;
 }
 
 function getOrCreatePrinterSocket(host, port) {
@@ -230,6 +236,74 @@ function getOrCreatePrinterSocket(host, port) {
   });
   networkPrinterSockets.set(key, socket);
   return socket;
+}
+
+async function openNativePrinterPort(portPath, baudRate = 9600) {
+  const key = getPrinterPortKey(portPath, baudRate);
+  let port = nativePrinterPorts.get(key);
+  if (port && port.isOpen) return port;
+
+  port = new SerialPort({
+    path: String(portPath || '').trim(),
+    baudRate: Number(baudRate || 9600),
+    autoOpen: false,
+  });
+
+  await new Promise((resolve, reject) => {
+    const onError = (error) => {
+      port.removeListener('open', onOpen);
+      reject(error);
+    };
+    const onOpen = () => {
+      port.removeListener('error', onError);
+      resolve();
+    };
+
+    port.once('error', onError);
+    port.once('open', onOpen);
+    port.open((error) => {
+      if (error) {
+        port.removeListener('open', onOpen);
+        port.removeListener('error', onError);
+        reject(error);
+      }
+    });
+  });
+
+  port.on('error', () => {
+    nativePrinterPorts.delete(key);
+  });
+  port.on('close', () => {
+    nativePrinterPorts.delete(key);
+  });
+
+  nativePrinterPorts.set(key, port);
+  return port;
+}
+
+async function closeNativePrinterPort(portPath, baudRate = 9600) {
+  const key = getPrinterPortKey(portPath, baudRate);
+  const port = nativePrinterPorts.get(key);
+  if (!port) return;
+
+  await new Promise((resolve) => {
+    const cleanup = () => {
+      port.removeListener('close', cleanup);
+      port.removeListener('error', cleanup);
+      resolve();
+    };
+    port.once('close', cleanup);
+    port.once('error', cleanup);
+    try {
+      port.close((error) => {
+        if (error) cleanup();
+      });
+    } catch {
+      cleanup();
+    }
+  }).catch(() => undefined);
+
+  nativePrinterPorts.delete(key);
 }
 
 const port = Number(process.env.PIPELINE_PORT || 4000);
@@ -908,6 +982,77 @@ const server = http.createServer(async (req, res) => {
           socket.end();
         }
         networkPrinterSockets.delete(key);
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (error) {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: String(error?.message || error) }));
+      }
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/printer/native/connect') {
+      try {
+        const body = JSON.parse(await readRequestBody(req));
+        const portPath = String(body.portPath || body.port || '').trim();
+        const baudRate = Number(body.baudRate || body.baud || 9600);
+        if (!portPath || !Number.isInteger(baudRate) || baudRate < 1 || baudRate > 115200) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Valid printer port path and baud rate are required.' }));
+          return;
+        }
+
+        await openNativePrinterPort(portPath, baudRate);
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true, portPath, baudRate }));
+      } catch (error) {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: String(error?.message || error) }));
+      }
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/printer/native/send') {
+      try {
+        const body = JSON.parse(await readRequestBody(req));
+        const portPath = String(body.portPath || body.port || '').trim();
+        const baudRate = Number(body.baudRate || body.baud || 9600);
+        const data = Array.isArray(body.data) ? Uint8Array.from(body.data.map(Number)) : new Uint8Array();
+        if (!portPath || !Number.isInteger(baudRate) || baudRate < 1 || baudRate > 115200) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Valid printer port path and baud rate are required.' }));
+          return;
+        }
+
+        const port = await openNativePrinterPort(portPath, baudRate);
+        if (!port || !port.isOpen) {
+          res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Native printer port is not open.' }));
+          return;
+        }
+
+        port.write(Buffer.from(data));
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (error) {
+        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ error: String(error?.message || error) }));
+      }
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/printer/native/disconnect') {
+      try {
+        const body = JSON.parse(await readRequestBody(req));
+        const portPath = String(body.portPath || body.port || '').trim();
+        const baudRate = Number(body.baudRate || body.baud || 9600);
+        if (!portPath) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: 'Printer port path is required.' }));
+          return;
+        }
+
+        await closeNativePrinterPort(portPath, baudRate);
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ok: true }));
       } catch (error) {

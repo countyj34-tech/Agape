@@ -262,6 +262,10 @@ export interface Settings {
   shopName: string;
   shopAddress: string;
   shopPhone: string;
+  receiptStoreName?: string;
+  receiptStoreAddress?: string;
+  receiptStorePhone?: string;
+  receiptLogoUrl?: string;
   currency: string;
   currencySymbol: string;
   // Base currency in which historical amounts are stored. Defaults to first currency used (e.g. ZMW).

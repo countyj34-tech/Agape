@@ -106,7 +106,13 @@ function money(symbol: string, value: number): string {
 export function buildEscPosTestPrint(settings: Settings): Uint8Array {
   const cols = colsForWidth(settings.thermalPrinterWidth ?? '80mm');
   const lines: string[] = [];
-  lines.push(settings.shopName || 'Mthunzi POS');
+  const receiptName = settings.receiptStoreName || settings.shopName || 'Mthunzi POS';
+  const receiptAddress = settings.receiptStoreAddress || settings.shopAddress || '';
+  const receiptPhone = settings.receiptStorePhone || settings.shopPhone || '';
+
+  lines.push(receiptName);
+  if (receiptAddress) lines.push(receiptAddress);
+  if (receiptPhone) lines.push(receiptPhone);
   lines.push('BLUETOOTH TEST PRINT');
   lines.push(new Date().toLocaleString());
   lines.push(repeat('-', cols));
@@ -182,6 +188,9 @@ export function buildEscPosReceipt(args: {
 }): Uint8Array {
   const { sale, settings } = args;
   const cols = colsForWidth(settings.thermalPrinterWidth ?? '80mm');
+  const receiptName = settings.receiptStoreName || settings.shopName || 'Mthunzi POS';
+  const receiptAddress = settings.receiptStoreAddress || settings.shopAddress || '';
+  const receiptPhone = settings.receiptStorePhone || settings.shopPhone || '';
   const currencySymbol = settings.currencySymbol || 'K';
   const salesTax = computeSalesTaxForSale(sale, settings);
   const salesTaxAmount = Math.max(0, Number(sale.salesTaxAmount ?? salesTax.taxAmount ?? 0));
@@ -192,9 +201,9 @@ export function buildEscPosReceipt(args: {
   const lines: string[] = [];
 
   // Header
-  lines.push(settings.shopName || 'Mthunzi POS');
-  if (settings.shopAddress) lines.push(settings.shopAddress);
-  if (settings.shopPhone) lines.push(settings.shopPhone);
+  lines.push(receiptName);
+  if (receiptAddress) lines.push(receiptAddress);
+  if (receiptPhone) lines.push(receiptPhone);
   lines.push('');
   lines.push(`Receipt: ${sale.receiptNumber || sale.id}`);
   lines.push(`Date: ${new Date(sale.createdAt).toLocaleString()}`);
@@ -303,9 +312,14 @@ export function buildEscPosShortageSlip(args: {
   const { staffName, shortageAmount, settings } = args;
   const cols = colsForWidth(settings.thermalPrinterWidth ?? '80mm');
   const currencySymbol = settings.currencySymbol || 'K';
+  const receiptName = settings.receiptStoreName || settings.shopName || 'Mthunzi POS';
+  const receiptAddress = settings.receiptStoreAddress || settings.shopAddress || '';
+  const receiptPhone = settings.receiptStorePhone || settings.shopPhone || '';
 
   const lines: string[] = [];
-  lines.push(settings.shopName || 'Mthunzi POS');
+  lines.push(receiptName);
+  if (receiptAddress) lines.push(receiptAddress);
+  if (receiptPhone) lines.push(receiptPhone);
   lines.push('AUDIT SHORTAGE SLIP');
   lines.push(new Date().toLocaleString());
   lines.push(repeat('-', cols));

@@ -83,6 +83,44 @@ describe('BluetoothPrinterService network support', () => {
     );
   });
 
+  it('falls back to the configured Wi‑Fi/LAN printer when WebUSB permission is denied', async () => {
+    localStorage.setItem('bluetoothPrinter:networkHost', '192.168.1.45');
+    localStorage.setItem('bluetoothPrinter:networkPort', '9100');
+
+    Object.defineProperty(navigator, 'usb', {
+      value: {
+        requestDevice: vi.fn().mockRejectedValue(new Error('Permission denied')),
+        getDevices: vi.fn().mockResolvedValue([]),
+      },
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'serial', { value: undefined, configurable: true });
+    Object.defineProperty(navigator, 'bluetooth', { value: undefined, configurable: true });
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true }),
+      text: async () => '',
+    } as Response);
+
+    const service = new BluetoothPrinterService();
+    const connected = await service.discoverAndConnect();
+
+    expect(connected).toBe(true);
+    expect(service.getState()).toMatchObject({
+      kind: 'connected',
+      transport: 'network',
+      deviceName: '192.168.1.45:9100',
+    });
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/printer/connect',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      })
+    );
+  });
+
   it('sends a print job to a configured Wi‑Fi/LAN printer even without Bluetooth or serial APIs', async () => {
     localStorage.setItem('bluetoothPrinter:networkHost', '192.168.1.45');
     localStorage.setItem('bluetoothPrinter:networkPort', '9100');

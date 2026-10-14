@@ -102,6 +102,10 @@ export default function AdminDashboard() {
       | 'userRole'
       | 'assignedStoreId'
       | 'thermalPrinterWidth'
+      | 'receiptStoreName'
+      | 'receiptStoreAddress'
+      | 'receiptStorePhone'
+      | 'receiptLogoUrl'
       | 'receiptFooter'
       | 'autoWhatsAppEnabled'
       | 'autoWhatsAppNumber'
@@ -120,6 +124,10 @@ export default function AdminDashboard() {
     userRole: 'owner',
     assignedStoreId: null,
     thermalPrinterWidth: '80mm',
+    receiptStoreName: 'Mthunzi Store',
+    receiptStoreAddress: '',
+    receiptStorePhone: '',
+    receiptLogoUrl: '',
     receiptFooter: 'Thank you for shopping with us!',
     autoWhatsAppEnabled: false,
     autoWhatsAppNumber: '',
@@ -336,6 +344,10 @@ export default function AdminDashboard() {
         userRole: settings.userRole ?? 'owner',
         assignedStoreId: settings.assignedStoreId ?? null,
         thermalPrinterWidth: settings.thermalPrinterWidth ?? '80mm',
+        receiptStoreName: settings.receiptStoreName ?? settings.shopName ?? 'Mthunzi Store',
+        receiptStoreAddress: settings.receiptStoreAddress ?? settings.shopAddress ?? '',
+        receiptStorePhone: settings.receiptStorePhone ?? settings.shopPhone ?? '',
+        receiptLogoUrl: settings.receiptLogoUrl ?? '',
         receiptFooter: settings.receiptFooter ?? 'Thank you for shopping with us!',
         autoWhatsAppEnabled: settings.autoWhatsAppEnabled ?? false,
         autoWhatsAppNumber: settings.autoWhatsAppNumber ?? '',
@@ -766,6 +778,13 @@ export default function AdminDashboard() {
         assignedStoreId:
           settingsDraft.userRole === 'staff' ? settingsDraft.assignedStoreId ?? null : null,
         thermalPrinterWidth: settingsDraft.thermalPrinterWidth ?? settings.thermalPrinterWidth ?? '80mm',
+        receiptStoreName:
+          settingsDraft.receiptStoreName ?? settings.receiptStoreName ?? settings.shopName ?? 'Mthunzi Store',
+        receiptStoreAddress:
+          settingsDraft.receiptStoreAddress ?? settings.receiptStoreAddress ?? settings.shopAddress ?? '',
+        receiptStorePhone:
+          settingsDraft.receiptStorePhone ?? settings.receiptStorePhone ?? settings.shopPhone ?? '',
+        receiptLogoUrl: settingsDraft.receiptLogoUrl ?? settings.receiptLogoUrl ?? '',
         receiptFooter: settingsDraft.receiptFooter ?? settings.receiptFooter ?? 'Thank you for shopping with us!',
         autoWhatsAppEnabled: settingsDraft.autoWhatsAppEnabled ?? settings.autoWhatsAppEnabled ?? false,
         autoWhatsAppNumber: settingsDraft.autoWhatsAppNumber ?? settings.autoWhatsAppNumber ?? '',
@@ -1066,6 +1085,58 @@ export default function AdminDashboard() {
               <CardTitle>Hardware (Offline)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Store name on receipt</Label>
+                <Input
+                  value={settingsDraft?.receiptStoreName ?? ''}
+                  onChange={(e) =>
+                    setSettingsDraft((prev) =>
+                      prev ? { ...prev, receiptStoreName: e.target.value } : prev
+                    )
+                  }
+                  placeholder={settings?.shopName || 'Mthunzi Store'}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Receipt address</Label>
+                <Input
+                  value={settingsDraft?.receiptStoreAddress ?? ''}
+                  onChange={(e) =>
+                    setSettingsDraft((prev) =>
+                      prev ? { ...prev, receiptStoreAddress: e.target.value } : prev
+                    )
+                  }
+                  placeholder="123 Main Road, Lusaka"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Receipt phone</Label>
+                <Input
+                  value={settingsDraft?.receiptStorePhone ?? ''}
+                  onChange={(e) =>
+                    setSettingsDraft((prev) =>
+                      prev ? { ...prev, receiptStorePhone: e.target.value } : prev
+                    )
+                  }
+                  placeholder="+260 97 123 4567"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Optional receipt logo URL</Label>
+                <Input
+                  value={settingsDraft?.receiptLogoUrl ?? ''}
+                  onChange={(e) =>
+                    setSettingsDraft((prev) =>
+                      prev ? { ...prev, receiptLogoUrl: e.target.value } : prev
+                    )
+                  }
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label>Thermal paper width</Label>
                 <Select

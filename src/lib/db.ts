@@ -2104,6 +2104,10 @@ export async function initializeSettings(): Promise<Settings> {
     shopName: 'Mthunzi Store',
     shopAddress: '',
     shopPhone: '',
+    receiptStoreName: 'Mthunzi Store',
+    receiptStoreAddress: '',
+    receiptStorePhone: '',
+    receiptLogoUrl: '',
     currency: 'ZMW',
     currencySymbol: 'K',
     baseCurrency: 'ZMW',
@@ -2160,6 +2164,10 @@ export async function initializeSettings(): Promise<Settings> {
       !existing.baseCurrency ||
       !existing.plan ||
       !existing.userRole ||
+      typeof (existing as any).receiptStoreName !== 'string' ||
+      typeof (existing as any).receiptStoreAddress !== 'string' ||
+      typeof (existing as any).receiptStorePhone !== 'string' ||
+      typeof (existing as any).receiptLogoUrl !== 'string' ||
       typeof (existing as any).salesTaxMode !== 'string' ||
       typeof (existing as any).salesTaxRate !== 'number' ||
       typeof existing.activationLockEnabled !== 'boolean' ||

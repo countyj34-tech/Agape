@@ -44,7 +44,11 @@ export function HardwareScannerListener() {
   );
 
   // Best-effort printer auto-reconnect on app start (offline-friendly).
+  // This must run only once per mount so route changes do not retrigger the reconnect loop.
+  const didAttemptPrinterReconnect = useRef(false);
   useEffect(() => {
+    if (didAttemptPrinterReconnect.current) return;
+    didAttemptPrinterReconnect.current = true;
     autoReconnect().catch(() => undefined);
   }, [autoReconnect]);
 

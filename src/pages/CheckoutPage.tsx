@@ -17,6 +17,7 @@ import { CreditCard, Banknote, Smartphone, Check, ArrowLeft, Wifi, WifiOff } fro
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { RollingNumber } from '@/components/ui/rolling-number';
+import { ProductImage } from '@/components/ProductImage';
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -513,11 +514,22 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 {state.items.map((item) => (
                   <div key={item.lineId} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">
-                        {item.product.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">× {item.quantity}</p>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <ProductImage
+                        productId={item.product.id}
+                        localImageUrl={item.product.imageUrl}
+                        storeId={item.product.storeId}
+                        alt={item.product.name}
+                        className="h-12 w-12 rounded-xl border border-slate-200 object-cover"
+                        showPlaceholder={true}
+                        placeholderText="IMG"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {item.product.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">× {item.quantity}</p>
+                      </div>
                     </div>
                     <span className="shrink-0 text-sm font-semibold text-slate-900">
                       {formatCurrency((item.unitPrice ?? item.product.sellingPrice) * item.quantity)}
@@ -888,11 +900,22 @@ export default function CheckoutPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {state.items.map((item) => (
-              <div key={item.lineId} className="flex justify-between text-sm">
-                <span>
-                  {item.product.name} × {item.quantity}
-                </span>
-                <span className="font-medium">
+              <div key={item.lineId} className="flex items-center justify-between gap-3 text-sm">
+                <div className="flex min-w-0 items-center gap-3">
+                  <ProductImage
+                    productId={item.product.id}
+                    localImageUrl={item.product.imageUrl}
+                    storeId={item.product.storeId}
+                    alt={item.product.name}
+                    className="h-10 w-10 rounded-lg border border-slate-200 object-cover"
+                    showPlaceholder={true}
+                    placeholderText="IMG"
+                  />
+                  <span className="min-w-0 truncate">
+                    {item.product.name} × {item.quantity}
+                  </span>
+                </div>
+                <span className="shrink-0 font-medium">
                   {formatCurrency((item.unitPrice ?? item.product.sellingPrice) * item.quantity)}
                 </span>
               </div>

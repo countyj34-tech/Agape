@@ -5,7 +5,7 @@ export type BluetoothPrinterStatus =
   | { kind: 'unsupported' }
   | { kind: 'disconnected' }
   | { kind: 'connecting'; deviceName?: string }
-  | { kind: 'connected'; deviceName: string; transport?: 'serial' | 'usb' | 'ble' | 'network' }
+  | { kind: 'connected'; deviceName: string; transport?: 'serial' | 'usb' | 'ble' | 'network' | 'native' }
   | { kind: 'error'; error: string };
 
 const LS_DEVICE_ID = 'bluetoothPrinter:lastDeviceId';
@@ -17,10 +17,13 @@ const LS_SERIAL_VID = 'bluetoothPrinter:serialVendorId';
 const LS_SERIAL_PID = 'bluetoothPrinter:serialProductId';
 const LS_NETWORK_HOST = 'bluetoothPrinter:networkHost';
 const LS_NETWORK_PORT = 'bluetoothPrinter:networkPort';
+const LS_NATIVE_PORT = 'bluetoothPrinter:nativePort';
+const LS_NATIVE_BAUD = 'bluetoothPrinter:nativeBaud';
 
 /** RPP02N and similar Classic Bluetooth printers speak ESC/POS over a virtual COM port. */
 const DEFAULT_SERIAL_BAUD = 9600;
 const DEFAULT_NETWORK_PORT = 9100;
+const DEFAULT_NATIVE_BAUD = 9600;
 const USB_PRINTER_VENDOR_IDS = [0x04b8];
 
 function safeLocalStorageGet(key: string): string {
@@ -83,7 +86,7 @@ const CANDIDATE_CHARACTERISTIC_UUIDS: BluetoothCharacteristicUUID[] = [
 ];
 
 type Listener = (state: BluetoothPrinterStatus) => void;
-type PrinterTransport = 'serial' | 'usb' | 'ble' | 'network';
+type PrinterTransport = 'serial' | 'usb' | 'ble' | 'network' | 'native';
 
 function normalizeNetworkHost(input: string): string {
   const value = String(input || '').trim();
@@ -113,8 +116,21 @@ function hasConfiguredNetworkPrinter(): boolean {
   return !!host && Number.isInteger(port) && port >= 1 && port <= 65535;
 }
 
+function hasConfiguredNativePrinter(): boolean {
+  if (typeof window === 'undefined' || !('localStorage' in window)) return false;
+  const portPath = String(safeLocalStorageGet(LS_NATIVE_PORT) || '').trim();
+  const baud = Number(safeLocalStorageGet(LS_NATIVE_BAUD));
+  return !!portPath && Number.isInteger(baud) && baud > 0 && baud <= 115200;
+}
+
 function isAnyPrinterApiSupported(): boolean {
-  return isWebBluetoothSupported() || isWebSerialSupported() || isWebUsbSupported() || hasConfiguredNetworkPrinter();
+  return (
+    isWebBluetoothSupported() ||
+    isWebSerialSupported() ||
+    isWebUsbSupported() ||
+    hasConfiguredNetworkPrinter() ||
+    hasConfiguredNativePrinter()
+  );
 }
 
 function delay(ms: number): Promise<void> {
@@ -151,12 +167,18 @@ export class BluetoothPrinterService {
 
   private networkHost: string | null = null;
   private networkPort: number | null = null;
+  private nativePortPath: string | null = null;
+  private nativeBaudRate: number | null = null;
 
   constructor() {
     const savedHost = safeLocalStorageGet(LS_NETWORK_HOST);
     const savedPort = Number(safeLocalStorageGet(LS_NETWORK_PORT));
+    const savedNativePort = safeLocalStorageGet(LS_NATIVE_PORT);
+    const savedNativeBaud = Number(safeLocalStorageGet(LS_NATIVE_BAUD));
     if (savedHost) this.networkHost = normalizeNetworkHost(savedHost);
     if (Number.isFinite(savedPort) && savedPort > 0) this.networkPort = savedPort;
+    if (savedNativePort) this.nativePortPath = savedNativePort.trim();
+    if (Number.isInteger(savedNativeBaud) && savedNativeBaud > 0) this.nativeBaudRate = savedNativeBaud;
   }
 
   getState(): BluetoothPrinterStatus {
@@ -174,17 +196,71 @@ export class BluetoothPrinterService {
     for (const l of this.listeners) l(next);
   }
 
+  private async fallbackToConfiguredNetworkPrinter(): Promise<boolean> {
+    const host = this.networkHost || normalizeNetworkHost(safeLocalStorageGet(LS_NETWORK_HOST));
+    const port = this.networkPort ?? Number(safeLocalStorageGet(LS_NETWORK_PORT));
+
+    if (!host || !Number.isInteger(port) || port < 1 || port > 65535) {
+      return false;
+    }
+
+    this.networkHost = host;
+    this.networkPort = port;
+
+    try {
+      return await this.connectNetworkPrinter(host, port);
+    } catch {
+      return false;
+    }
+  }
+
+  private async fallbackToConfiguredNativePrinter(): Promise<boolean> {
+    const portPath = this.nativePortPath || String(safeLocalStorageGet(LS_NATIVE_PORT) || '').trim();
+    const baudRate = this.nativeBaudRate ?? Number(safeLocalStorageGet(LS_NATIVE_BAUD));
+
+    if (!portPath || !Number.isInteger(baudRate) || baudRate < 1 || baudRate > 115200) {
+      return false;
+    }
+
+    this.nativePortPath = portPath;
+    this.nativeBaudRate = baudRate;
+
+    try {
+      return await this.connectNativePrinter(portPath, baudRate);
+    } catch {
+      return false;
+    }
+  }
+
   /** Prefer the most reliable browser-supported printer path available: serial, USB, LAN, then BLE. */
   async discoverAndConnect(): Promise<boolean> {
     if (isWebSerialSupported()) {
-      return this.discoverAndConnectSerial();
+      try {
+        return await this.discoverAndConnectSerial();
+      } catch (e) {
+        const fallback = (await this.fallbackToConfiguredNetworkPrinter()) || (await this.fallbackToConfiguredNativePrinter());
+        if (fallback) return true;
+        throw e;
+      }
     }
+
     if (isWebUsbSupported()) {
-      return this.discoverAndConnectUsb();
+      try {
+        return await this.discoverAndConnectUsb();
+      } catch (e) {
+        const fallback = (await this.fallbackToConfiguredNetworkPrinter()) || (await this.fallbackToConfiguredNativePrinter());
+        if (fallback) return true;
+        throw e;
+      }
     }
+
     if (this.networkHost && this.networkPort) {
       return this.autoReconnectNetwork();
     }
+    if (this.nativePortPath && this.nativeBaudRate) {
+      return this.autoReconnectNative();
+    }
+
     return this.discoverAndConnectBle();
   }
 
@@ -206,6 +282,12 @@ export class BluetoothPrinterService {
         this.setState({ kind: 'disconnected' });
         return false;
       }
+
+      const fallback = (await this.fallbackToConfiguredNetworkPrinter()) || (await this.fallbackToConfiguredNativePrinter());
+      if (fallback) {
+        return true;
+      }
+
       const msg = (e as Error)?.message || 'USB printer connection failed';
       this.setState({ kind: 'error', error: msg });
       throw e;
@@ -314,6 +396,12 @@ export class BluetoothPrinterService {
       if (preferred === 'network') return false;
     }
 
+    if (preferred === 'native' || (!preferred && this.nativePortPath && this.nativeBaudRate)) {
+      const ok = await this.autoReconnectNative();
+      if (ok) return true;
+      if (preferred === 'native') return false;
+    }
+
     if (isWebBluetoothSupported()) {
       return this.autoReconnectBle();
     }
@@ -332,6 +420,7 @@ export class BluetoothPrinterService {
     await this.closeSerialQuietly();
     await this.closeUsbQuietly();
     await this.closeNetworkQuietly();
+    await this.closeNativeQuietly();
     await this.disconnectBleQuietly();
     this.transport = null;
     if (isAnyPrinterApiSupported()) this.setState({ kind: 'disconnected' });
@@ -364,6 +453,11 @@ export class BluetoothPrinterService {
 
     if (this.transport === 'network' && this.networkHost && this.networkPort) {
       await this.writeNetwork(data);
+      return;
+    }
+
+    if (this.transport === 'native' && this.nativePortPath && this.nativeBaudRate) {
+      await this.writeNative(data);
       return;
     }
 
@@ -404,6 +498,9 @@ export class BluetoothPrinterService {
     }
     if (this.transport === 'network') {
       return !!this.networkHost && !!this.networkPort;
+    }
+    if (this.transport === 'native') {
+      return !!this.nativePortPath && !!this.nativeBaudRate;
     }
     return false;
   }
@@ -687,6 +784,107 @@ export class BluetoothPrinterService {
       const message = await response.text().catch(() => '');
       throw new Error(message || 'Failed to send print job to the network printer.');
     }
+  }
+
+  async connectNativePrinter(portPath: string, baudRate = DEFAULT_NATIVE_BAUD): Promise<boolean> {
+    const normalizedPort = String(portPath || '').trim();
+    const normalizedBaud = Number(baudRate || DEFAULT_NATIVE_BAUD);
+    if (!normalizedPort || !Number.isInteger(normalizedBaud) || normalizedBaud < 1 || normalizedBaud > 115200) {
+      throw new Error('Printer port path and baud rate are required.');
+    }
+
+    await this.closeSerialQuietly();
+    await this.closeNetworkQuietly();
+    await this.disconnectBleQuietly();
+    await this.closeUsbQuietly();
+
+    this.setState({ kind: 'connecting', deviceName: normalizedPort });
+
+    const response = await fetch('/api/printer/native/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ portPath: normalizedPort, baudRate: normalizedBaud }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      this.setState({ kind: 'error', error: errorText || 'Failed to connect to the local desktop printer.' });
+      throw new Error(errorText || 'Failed to connect to the local desktop printer.');
+    }
+
+    this.nativePortPath = normalizedPort;
+    this.nativeBaudRate = normalizedBaud;
+    localStorage.setItem(LS_NATIVE_PORT, normalizedPort);
+    localStorage.setItem(LS_NATIVE_BAUD, String(normalizedBaud));
+    localStorage.setItem(LS_TRANSPORT, 'native');
+    this.transport = 'native';
+    this.setState({
+      kind: 'connected',
+      deviceName: `${normalizedPort} (${normalizedBaud})`,
+      transport: 'native',
+    });
+    return true;
+  }
+
+  private async autoReconnectNative(): Promise<boolean> {
+    const portPath = this.nativePortPath || String(safeLocalStorageGet(LS_NATIVE_PORT) || '').trim();
+    const baudRate = this.nativeBaudRate ?? Number(safeLocalStorageGet(LS_NATIVE_BAUD));
+
+    if (!portPath || !Number.isInteger(baudRate) || baudRate < 1 || baudRate > 115200) {
+      return false;
+    }
+
+    try {
+      this.setState({ kind: 'connecting', deviceName: `${portPath} (${baudRate})` });
+      await this.connectNativePrinter(portPath, baudRate);
+      return true;
+    } catch {
+      this.setState({ kind: 'disconnected' });
+      return false;
+    }
+  }
+
+  private async writeNative(data: Uint8Array): Promise<void> {
+    if (!this.nativePortPath || !this.nativeBaudRate) {
+      throw new Error('Native desktop printer is not configured.');
+    }
+
+    const response = await fetch('/api/printer/native/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        portPath: this.nativePortPath,
+        baudRate: this.nativeBaudRate,
+        data: Array.from(data),
+      }),
+    });
+
+    if (!response.ok) {
+      const message = await response.text().catch(() => '');
+      throw new Error(message || 'Failed to send print job to the local desktop printer.');
+    }
+  }
+
+  private async closeNativeQuietly(): Promise<void> {
+    if (!this.nativePortPath) return;
+
+    try {
+      await fetch('/api/printer/native/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          portPath: this.nativePortPath,
+          baudRate: this.nativeBaudRate ?? DEFAULT_NATIVE_BAUD,
+        }),
+      });
+    } catch {
+      /* ignore */
+    }
+
+    this.nativePortPath = null;
+    this.nativeBaudRate = null;
+    localStorage.removeItem(LS_NATIVE_PORT);
+    localStorage.removeItem(LS_NATIVE_BAUD);
   }
 
   private async writeBle(data: Uint8Array): Promise<void> {
