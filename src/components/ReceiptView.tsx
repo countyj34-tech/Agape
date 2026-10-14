@@ -24,7 +24,9 @@ export function ReceiptView({ sale, onClose, onBackToHome }: ReceiptViewProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const currencySymbol = settings?.currencySymbol || 'K';
-  const shopName = settings?.shopName || 'Mthunzi-Tech-Labs';
+  const shopName = settings?.receiptStoreName || settings?.shopName || 'Mthunzi-Tech-Labs';
+  const receiptAddress = settings?.receiptStoreAddress || settings?.shopAddress || '';
+  const receiptPhone = settings?.receiptStorePhone || settings?.shopPhone || '';
   const salesTax = computeSalesTaxForSale(sale, settings);
   const salesTaxAmount = Math.max(0, Number(sale.salesTaxAmount ?? salesTax.taxAmount ?? 0));
   const salesTaxRate = Math.max(0, Number(sale.salesTaxRate ?? salesTax.rate ?? 0));
@@ -85,6 +87,8 @@ export function ReceiptView({ sale, onClose, onBackToHome }: ReceiptViewProps) {
                 Mthunzi-Tech-Labs
               </h2>
               <p className="text-sm font-medium">{shopName}</p>
+              {receiptAddress && <p className="text-xs text-muted-foreground">{receiptAddress}</p>}
+              {receiptPhone && <p className="text-xs text-muted-foreground">{receiptPhone}</p>}
               <p className="text-xs text-muted-foreground">{dateStr}</p>
             </div>
 

@@ -45,7 +45,9 @@ export default function ReceiptPage() {
   );
 
   const sale = saleFromState?.id === routeSaleId ? saleFromState : saleFromDb ?? undefined;
-  const shopName = settings?.shopName || 'Mthunzi Store';
+  const shopName = settings?.receiptStoreName || settings?.shopName || 'Mthunzi Store';
+  const receiptAddress = settings?.receiptStoreAddress || settings?.shopAddress || '';
+  const receiptPhone = settings?.receiptStorePhone || settings?.shopPhone || '';
 
   const salesTax = sale ? computeSalesTaxForSale(sale, settings) : null;
   const salesTaxAmount = sale
@@ -186,6 +188,12 @@ export default function ReceiptPage() {
                     Mthunzi-Tech-Labs
                   </span>
                   <span className="text-xs font-medium">{shopName}</span>
+                  {receiptAddress && (
+                    <span className="text-[10px] text-muted-foreground">{receiptAddress}</span>
+                  )}
+                  {receiptPhone && (
+                    <span className="text-[10px] text-muted-foreground">{receiptPhone}</span>
+                  )}
                 </div>
               </div>
             </div>

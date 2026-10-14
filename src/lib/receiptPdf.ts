@@ -101,9 +101,9 @@ export async function generateReceiptPdfFile(args: {
   const marginX = 4;
   const rightX = pageWidth - marginX;
 
-  const shopName = settings?.shopName || 'Mthunzi Store';
-  const address = String(settings?.shopAddress || '').trim();
-  const phone = String(settings?.shopPhone || '').trim();
+  const shopName = settings?.receiptStoreName || settings?.shopName || 'Mthunzi Store';
+  const address = String(settings?.receiptStoreAddress || settings?.shopAddress || '').trim();
+  const phone = String(settings?.receiptStorePhone || settings?.shopPhone || '').trim();
   const currency = settings?.currencySymbol || 'K';
 
   const salesTax = computeSalesTaxForSale(sale, settings);
